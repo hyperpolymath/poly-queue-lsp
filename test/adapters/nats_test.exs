@@ -1,17 +1,17 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
-defmodule PolyLSP.Adapters.Redis_streamsTest do
+defmodule PolyLSP.Adapters.NatsTest do
   use ExUnit.Case
-  alias PolyLSP.Adapters.Redis_streams
+  alias PolyLSP.Adapters.Nats
 
   describe "detect/1" do
     test "returns true when config exists" do
-      assert {:ok, true} = Redis_streams.detect(".")
+      assert {:ok, true} = Nats.detect(".")
     end
   end
 
   describe "version/0" do
     test "returns version string" do
-      case Redis_streams.version() do
+      case Nats.version() do
         {:ok, version} -> assert is_binary(version)
         {:error, _} -> :ok  # CLI not installed
       end
@@ -20,7 +20,7 @@ defmodule PolyLSP.Adapters.Redis_streamsTest do
 
   describe "metadata/0" do
     test "returns valid metadata" do
-      meta = Redis_streams.metadata()
+      meta = Nats.metadata()
       assert is_map(meta)
       assert Map.has_key?(meta, :name)
     end

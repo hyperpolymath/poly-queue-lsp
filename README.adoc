@@ -1,0 +1,192 @@
+= poly-queue-lsp
+:toc:
+:toc-placement!:
+
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link=https://github.com/hyperpolymath/palimpsest-license]
+image:https://img.shields.io/badge/elixir-1.17+-purple.svg[Elixir 1.17+,link=https://elixir-lang.org/]
+
+Language Server Protocol implementation for message queue management (Redis Streams, RabbitMQ, NATS).
+
+toc::[]
+
+== Overview
+
+*poly-queue-lsp* provides IDE integration for managing message queues across multiple systems. Built with Elixir's BEAM VM, each queue adapter runs as an isolated process with automatic fault recovery.
+
+== Features
+
+* 🔄 *Auto-detection*: Detects available message queue systems (redis-cli, rabbitmqctl, nats)
+* ✨ *Auto-completion*: Queue names, consumer groups, message formats
+* 🔍 *Diagnostics*: Connection errors, queue issues, consumer lag
+* 📚 *Hover docs*: Queue statistics, consumer info, throughput metrics
+* ⚡ *Commands*: Publish, subscribe, purge, list queues directly from editor
+* 🛡️ *Fault isolation*: Crash in one adapter doesn't affect others
+
+== Supported Message Queue Systems
+
+[cols="1,2,2,3"]
+|===
+|System |CLI Tool |Protocol |Features
+
+|Redis Streams
+|`redis-cli`
+|RESP
+|Publish, subscribe, consumer groups, persistence, replay
+
+|RabbitMQ
+|`rabbitmqctl` / `rabbitmqadmin`
+|AMQP 0-9-1
+|Publish, subscribe, exchanges, routing, persistence, priority
+
+|NATS
+|`nats`
+|NATS Protocol
+|Publish, subscribe, JetStream, persistence, replay, at-least-once
+|===
+
+== Installation
+
+[source,bash]
+----
+git clone https://github.com/hyperpolymath/poly-queue-lsp
+cd poly-queue-lsp
+mix deps.get
+mix compile
+----
+
+== Prerequisites
+
+Install the CLI tools for the message queue systems you want to use:
+
+[source,bash]
+----
+# Redis
+sudo dnf install redis  # or: brew install redis
+
+# RabbitMQ
+sudo dnf install rabbitmq-server  # or: brew install rabbitmq
+
+# NATS
+go install github.com/nats-io/natscli/nats@latest
+# or download from: https://github.com/nats-io/natscli/releases
+----
+
+== Architecture
+
+Each message queue adapter implements the `PolyQueue.Adapters.Behaviour`:
+
+[source,elixir]
+----
+@callback detect() :: {:ok, boolean()} | {:error, String.t()}
+@callback publish(queue_name, message, opts) :: {:ok, String.t()} | {:error, String.t()}
+@callback subscribe(queue_name, opts) :: {:ok, Enumerable.t()} | {:error, String.t()}
+@callback list_queues() :: {:ok, [String.t()]} | {:error, String.t()}
+@callback queue_status(queue_name) :: {:ok, queue_info} | {:error, String.t()}
+@callback purge_queue(queue_name) :: :ok | {:error, String.t()}
+@callback version() :: {:ok, String.t()} | {:error, String.t()}
+@callback metadata() :: map()
+----
+
+Adapters run as supervised GenServer processes, providing fault tolerance and concurrent operations.
+
+== Usage
+
+=== Starting the LSP Server
+
+[source,bash]
+----
+mix run --no-halt
+----
+
+=== Example Operations
+
+==== Redis Streams
+
+[source,elixir]
+----
+# Publish message
+PolyQueue.Adapters.RedisStreams.publish("orders", %{order_id: 123, amount: 50.00})
+
+# Subscribe to stream
+PolyQueue.Adapters.RedisStreams.subscribe("orders", consumer_group: "processors", count: 10)
+
+# Get queue status
+PolyQueue.Adapters.RedisStreams.queue_status("orders")
+----
+
+==== RabbitMQ
+
+[source,elixir]
+----
+# Publish to queue
+PolyQueue.Adapters.RabbitMQ.publish("tasks", "Process this task", priority: :high)
+
+# Subscribe
+PolyQueue.Adapters.RabbitMQ.subscribe("tasks", count: 5)
+
+# Purge queue
+PolyQueue.Adapters.RabbitMQ.purge_queue("tasks")
+----
+
+==== NATS JetStream
+
+[source,elixir]
+----
+# Publish to stream
+PolyQueue.Adapters.NATS.publish("events", %{event: "user.login", user_id: 456}, stream: true)
+
+# Subscribe with durable consumer
+PolyQueue.Adapters.NATS.subscribe("events", stream: true, durable: true, consumer: "event-processor")
+
+# List streams
+PolyQueue.Adapters.NATS.list_queues()
+----
+
+== VSCode Extension
+
+The VSCode extension is located in `vscode-extension/`. Install it with:
+
+[source,bash]
+----
+cd vscode-extension
+npm install  # Use Deno in production
+npm run compile
+----
+
+== Development
+
+=== Run Tests
+
+[source,bash]
+----
+mix test
+----
+
+=== Quality Checks
+
+[source,bash]
+----
+mix quality
+----
+
+=== Type Checking
+
+[source,bash]
+----
+mix dialyzer
+----
+
+== Ecosystem Integration
+
+*poly-queue-lsp* is part of the hyperpolymath ecosystem:
+
+* *poly-ssg-lsp*: Language Server for 60+ static site generators
+* *poly-ssg-mcp*: Model Context Protocol server for SSGs
+
+== License
+
+PMPL-1.0-or-later
+
+== Author
+
+Jonathan D.A. Jewell <jonathan.jewell@open.ac.uk>

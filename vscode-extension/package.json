@@ -1,0 +1,119 @@
+{
+  "name": "poly-queue-lsp",
+  "displayName": "PolyQueue LSP",
+  "description": "Language Server for message queue management (Redis Streams, RabbitMQ, NATS)",
+  "version": "0.1.0",
+  "publisher": "hyperpolymath",
+  "license": "PMPL-1.0-or-later",
+  "author": {
+    "name": "Jonathan D.A. Jewell",
+    "email": "jonathan.jewell@open.ac.uk"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyperpolymath/poly-queue-lsp"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "message queue",
+    "redis",
+    "rabbitmq",
+    "nats",
+    "jetstream",
+    "lsp"
+  ],
+  "activationEvents": [
+    "onLanguage:json",
+    "onLanguage:yaml",
+    "onLanguage:toml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "PolyQueue LSP",
+      "properties": {
+        "polyqueue.lsp.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the poly-queue-lsp server executable"
+        },
+        "polyqueue.redis.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "Redis host"
+        },
+        "polyqueue.redis.port": {
+          "type": "number",
+          "default": 6379,
+          "description": "Redis port"
+        },
+        "polyqueue.rabbitmq.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "RabbitMQ host"
+        },
+        "polyqueue.rabbitmq.port": {
+          "type": "number",
+          "default": 5672,
+          "description": "RabbitMQ port"
+        },
+        "polyqueue.nats.server": {
+          "type": "string",
+          "default": "nats://localhost:4222",
+          "description": "NATS server URL"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "polyqueue.listQueues",
+        "title": "List Queues",
+        "category": "PolyQueue"
+      },
+      {
+        "command": "polyqueue.queueStatus",
+        "title": "Show Queue Status",
+        "category": "PolyQueue"
+      },
+      {
+        "command": "polyqueue.publish",
+        "title": "Publish Message",
+        "category": "PolyQueue"
+      },
+      {
+        "command": "polyqueue.subscribe",
+        "title": "Subscribe to Queue",
+        "category": "PolyQueue"
+      },
+      {
+        "command": "polyqueue.purgeQueue",
+        "title": "Purge Queue",
+        "category": "PolyQueue"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "eslint": "^8.x",
+    "typescript": "^5.x"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
+  }
+}
